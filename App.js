@@ -1,138 +1,110 @@
-import { StatusBar } from 'expo-status-bar';
-import { Button, Image, StyleSheet, Text, View } from 'react-native';
-import { TextInput } from 'react-native-web';
-import FlatButton from './button';
+import { useState, useEffect } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { Pedometer } from 'expo-sensors';
 
 export default function App() {
+  const [isPedometerAvailable, setIsPedometerAvailable] = useState('checking');
+  const [pastStepCount, setPastStepCount] = useState(0);
+  const [currentStepCount, setCurrentStepCount] = useState(0);
+
+  const subscribe = async () => {
+    const isAvailable = await Pedometer.isAvailableAsync();
+    setIsPedometerAvailable(String(isAvailable));
+
+    if (isAvailable) {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(end.getDate() - 1);
+
+      const pastStepCountResult = await Pedometer.getStepCountAsync(start, end);
+      if (pastStepCountResult) {
+        setPastStepCount(pastStepCountResult.steps);
+      }
+
+      return Pedometer.watchStepCount(result => {
+        setCurrentStepCount(result.steps);
+      });
+    }
+  };
+
+  useEffect(() => {
+    const subscription = subscribe();
+    return () => subscription && subscription.remove();
+  }, []);
+
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text>Todolist</Text>
-        <Image
-        style={styles.headerImg}
-        source={require('./assets/favicon.png')}
-        />
-      </View>
-      <Text>Indstast opgave</Text>
-      <View style={styles.inputs}>
-        <TextInput
-        style={styles.input}
-        placeholder="opgave titel"
-        ></TextInput>
-        <Button
-        style={styles.button} 
-        title={"?"}>?</Button>
-      </View>
-      <View style={styles.spacer}></View>
-      <View style={styles.taskContainer}>
-        
-        <View style={styles.itemView}>
-          <Text>Task one</Text>
-          <View style={{
-            borderRadius: '10rem',
-          }}>
-  <FlatButton text='-' />
-          </View>
-          
-        </View>
-        <View style={styles.itemView}>
-          <Text>Task Two</Text>
-<FlatButton text='-' />
-        </View>
-        <View style={styles.itemView}>
-          <Text>Task Three</Text>
-<FlatButton text='-' />
-        </View>
-        <View style={styles.itemView}>
-          <Text>Task Four</Text>
-          <FlatButton text='-' />
-        </View>
-        <View style={styles.itemView}>
-          <Text>Task Five</Text>
-<FlatButton text='-' />
-        </View>
-      </View>
-      <View style={styles.footer}>       
-      <Image
-        style={styles.footerImg}
-        source={require('./assets/icon.png')}
-        />
-        <View>
-        <Text>footer</Text>
-        <Text>footer</Text>
-        <Text>footer</Text>
-        <Text>footer</Text>
-        </View>
- 
-      </View>
-      <StatusBar style="auto" />
+      <Text>Pedometer.isAvailableAsync(): {isPedometerAvailable}</Text>
+      <Text>Steps taken in the last 24 hours: {pastStepCount}</Text>
+      <Text>Walk! And watch this go up: {currentStepCount}</Text>
     </View>
   );
-}
 
+
+}
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-    color: '#20232a',
-  },
-  header: {
-    flexDirection: 'row',
-    backgroundColor: '#61dafb',
-    color: '#20232a',
-    width: '100%',
-  },
-  footer: {
-    flexDirection: 'row',
-    backgroundColor: 'green',
-    color: '#20232a',
-  },
-  inputs: {
-    flexDirection: "row",
-    backgroundColor: 'red',
-    width: "100%",
-    
-  },
-  input:
-    {
-      backgroundColor: 'blue',
-      marginRight: '10vw',
+    container: {
+      flex: 1,
+      backgroundColor: 'white',
+      color: '#20232a',
     },
-    button:
-    {
-      backgroundColor: 'yellow',
-      margin: '10vh',
+    header: {
+      flexDirection: 'row',
+      backgroundColor: '#61dafb',
+      color: '#20232a',
+      width: '100%',
     },
-    spacer: {
-      backgroundColor:'black',
-      height: '0.1vh',
-      marginTop: '0.5vh'
+    footer: {
+      flexDirection: 'row',
+      backgroundColor: 'green',
+      color: '#20232a',
     },
-    itemView:{
+    inputs: {
       flexDirection: "row",
-      margin: '0.5vh',
-      paddingHorizontal: '1rem',
-      paddingVertical: '0.5rem',
-      borderColor: 'black',
-      borderWidth: 1,
-      width: '90%',
-      backgroundColor: 'yellow',
+      backgroundColor: 'red',
+      width: "100%",
+      
     },
-    itemBtn:{
-      margin: 100,
-    },
-    headerImg: {
-      width: 50,
-      height: 50,
-      resizeMode: 'stretch',
-      margin: '0.5rem',
-      marginLeft: '19rem',
-    },
-    footerImg: {
-      width: 50,
-      height: 50,
-      resizeMode: 'stretch',
-      margin: '0.5rem',
-      marginRight: '19rem',
-    }
-});
+    input:
+      {
+        backgroundColor: 'blue',
+        marginRight: '10vw',
+      },
+      button:
+      {
+        backgroundColor: 'yellow',
+        margin: '10vh',
+      },
+      spacer: {
+        backgroundColor:'black',
+        height: '0.1vh',
+        marginTop: '0.5vh'
+      },
+      itemView:{
+        flexDirection: "row",
+        margin: '0.5vh',
+        paddingHorizontal: '1rem',
+        paddingVertical: '0.5rem',
+        borderColor: 'black',
+        borderWidth: 1,
+        width: '90%',
+        backgroundColor: 'yellow',
+      },
+      itemBtn:{
+        margin: 100,
+      },
+      headerImg: {
+        width: 50,
+        height: 50,
+        resizeMode: 'stretch',
+        margin: '0.5rem',
+        marginLeft: '19rem',
+      },
+      footerImg: {
+        width: 50,
+        height: 50,
+        resizeMode: 'stretch',
+        margin: '0.5rem',
+        marginRight: '19rem',
+      }
+  });
