@@ -1,110 +1,96 @@
-import { useState, useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { Pedometer } from 'expo-sensors';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, Image, TextInput, Button, FlatList, ScrollView, Pressable } from 'react-native';
 
 export default function App() {
-  const [isPedometerAvailable, setIsPedometerAvailable] = useState('checking');
-  const [pastStepCount, setPastStepCount] = useState(0);
-  const [currentStepCount, setCurrentStepCount] = useState(0);
+  const [items, setItems] = useState([
+    { id: 1, text: 'Item-1' },
+    { id: 2, text: 'Item-2' },
+    { id: 3, text: 'Item 3' },
+    { id: 4, text: 'Item 4' },
+    { id: 5, text: 'Item 5' },
+  ]);
 
-  const subscribe = async () => {
-    const isAvailable = await Pedometer.isAvailableAsync();
-    setIsPedometerAvailable(String(isAvailable));
-
-    if (isAvailable) {
-      const end = new Date();
-      const start = new Date();
-      start.setDate(end.getDate() - 1);
-
-      const pastStepCountResult = await Pedometer.getStepCountAsync(start, end);
-      if (pastStepCountResult) {
-        setPastStepCount(pastStepCountResult.steps);
-      }
-
-      return Pedometer.watchStepCount(result => {
-        setCurrentStepCount(result.steps);
-      });
-    }
-  };
-
-  useEffect(() => {
-    const subscription = subscribe();
-    return () => subscription && subscription.remove();
-  }, []);
-
-  return (
-    <View style={styles.container}>
-      <Text>Pedometer.isAvailableAsync(): {isPedometerAvailable}</Text>
-      <Text>Steps taken in the last 24 hours: {pastStepCount}</Text>
-      <Text>Walk! And watch this go up: {currentStepCount}</Text>
-    </View>
-  );
-
-
+  const [name , setName] = useState("")
+function handleName() {
+    let lel;
+    lel = items
+    lel.push({ id: lel.length + 1, text: name})
+    setItems(lel)
+    console.log(items);
+    setName("")
 }
+function handlePress(e) {
+  let lel;
+  lel = items
+  console.log(e);
+  const found = lel.find(element => element.text == e.target.innerText);
+  console.log(found);
+  const index = lel.indexOf(found);
+  console.log(index);
+  lel.splice(index, 1);
+  console.log(lel);
+  setItems(lel)
+  setName(" ")
+  setTimeout(() => {
+    setName("")
+  }, 0);
+  
+}
+console.log(items);
+  return (
+    <ScrollView>
+      <View style={styles.container}>
+        <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.logo} />
+        <Text style={styles.heading}>Welcome to my app!</Text>
+        <Text style={styles.heading}>How are you {name ? name : "World"}?</Text>
+        <TextInput style={styles.input} placeholder="Enter your name" value={name} onChange={(e) => setName(e.target.value)} />
+        <Button title="Submit" onPress={() => handleName()} />
+        <FlatList
+        style={styles.myFlat}
+        numColumns={2}
+          data={items}
+          renderItem={({ item }) => <Pressable onPress={(e) => handlePress(e)}><Text style={styles.item}>{item.text}</Text></Pressable>}
+          keyExtractor={item => item.id}
+        />
+      </View>
+    </ScrollView>
+  );
+}
+
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: 'white',
-      color: '#20232a',
-    },
-    header: {
-      flexDirection: 'row',
-      backgroundColor: '#61dafb',
-      color: '#20232a',
-      width: '100%',
-    },
-    footer: {
-      flexDirection: 'row',
-      backgroundColor: 'green',
-      color: '#20232a',
-    },
-    inputs: {
-      flexDirection: "row",
-      backgroundColor: 'red',
-      width: "100%",
-      
-    },
-    input:
-      {
-        backgroundColor: 'blue',
-        marginRight: '10vw',
-      },
-      button:
-      {
-        backgroundColor: 'yellow',
-        margin: '10vh',
-      },
-      spacer: {
-        backgroundColor:'black',
-        height: '0.1vh',
-        marginTop: '0.5vh'
-      },
-      itemView:{
-        flexDirection: "row",
-        margin: '0.5vh',
-        paddingHorizontal: '1rem',
-        paddingVertical: '0.5rem',
-        borderColor: 'black',
-        borderWidth: 1,
-        width: '90%',
-        backgroundColor: 'yellow',
-      },
-      itemBtn:{
-        margin: 100,
-      },
-      headerImg: {
-        width: 50,
-        height: 50,
-        resizeMode: 'stretch',
-        margin: '0.5rem',
-        marginLeft: '19rem',
-      },
-      footerImg: {
-        width: 50,
-        height: 50,
-        resizeMode: 'stretch',
-        margin: '0.5rem',
-        marginRight: '19rem',
-      }
-  });
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logo: {
+    width: 150,
+    height: 150,
+    marginBottom: 20,
+  },
+  heading: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 8,
+    width: '80%',
+    marginBottom: 20,
+  },
+  item: {
+    backgroundColor: 'pink',
+    padding: 20,
+    marginVertical: 8,
+    marginHorizontal: 16,
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  myFlat:{
+    flexDirection: 'row',
+  }
+});
